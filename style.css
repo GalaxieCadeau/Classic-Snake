@@ -22,7 +22,7 @@ body {
 
 /* === Grundgrößen für das D-Pad (so gewählt, dass die Kreise NICHT überlappen) === */
 :root {
-  --dpad-area-size: 160px;      /* Quadrat für das Kreuz */
+  --dpad-area-size: 150px;      /* Quadrat für das Kreuz */
   --dpad-btn-size: 60px;        /* Durchmesser der Kreise */
   --dpad-bottom-offset: -180px; /* Abstand unterhalb des Spielfelds */
 }
@@ -531,4 +531,4 @@ li {
     --dpad-btn-size: 50px;
     --dpad-bottom-offset: -120px;
   }
-  }
+}
