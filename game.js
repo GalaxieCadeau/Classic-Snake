@@ -7,14 +7,14 @@ window.addEventListener("load", () => {
   const ctx = canvas.getContext("2d");
 
   // Spielfeld
-  const tileCount = 20; // 20x20 Felder
+  const tileCount = 23;              // 23x23 Felder
   const tileSize = canvas.width / tileCount;
 
   // --- Retro-Farben & Pixel-Stil ---
-  const BG_COLOR_OUTER = "#4e7a1e";   // dunkleres Grün
-  const BG_COLOR_INNER = "#6daa2a";   // etwas helleres Grün
-  const PIXEL_COLOR    = "#001600";   // Snake, Rand, Steine
-  const APPLE_COLOR    = "#b00000";   // Apfel-Pixel
+  const BG_COLOR_OUTER = "#4e7a1e";  // dunkleres Grün
+  const BG_COLOR_INNER = "#6daa2a";  // helleres Grün
+  const PIXEL_COLOR    = "#001600";  // Snake, Rand, Steine
+  const APPLE_COLOR    = "#b00000";  // Apfel
 
   const PIXEL_SCALE  = 0.7;
   const PIXEL_MARGIN = (1 - PIXEL_SCALE) / 2;
@@ -42,8 +42,11 @@ window.addEventListener("load", () => {
   const BEST_KEY_CLASSIC = "snake_best_classic";
   const BEST_KEY_HARD    = "snake_best_hard";
 
-  // Globales Leaderboard (Top 10, Name + Score – lokal gespeichert)
-  const GLOBAL_KEY = "snake_leaderboard_global";
+  // Globales Leaderboard (Top 10, lokal)
+  const GLOBAL_KEY       = "snake_leaderboard_global";
+
+  // Spielername (nur EINMAL abfragen)
+  const PLAYER_NAME_KEY  = "snake_player_name";
 
   // 🔹 Demo-Snake im Menü (nur Hintergrund)
   const DEMO_SPEED = 250;   // ms pro Schritt
@@ -66,7 +69,7 @@ window.addEventListener("load", () => {
   const btnCloseLeaderboard = document.getElementById("btnCloseLeaderboard");
   const lbClassicEl = document.getElementById("lbClassic");
   const lbHardEl = document.getElementById("lbHard");
-  const globalListEl = document.getElementById("globalList"); // Global-Top10
+  const globalListEl = document.getElementById("globalList");
 
   const scoreEl = document.getElementById("currentScore");
   const gemsEl = document.getElementById("gemsDisplay");
@@ -76,11 +79,48 @@ window.addEventListener("load", () => {
   const btnLeft = document.getElementById("btnLeft");
   const btnRight = document.getElementById("btnRight");
 
-  const controls = document.querySelector(".controls"); // Steuerkreuz-Container
+  const controls = document.querySelector(".controls");
+
+  // NEU: Tag für den Spielernamen im Menü
+  const playerNameTag = document.getElementById("playerNameTag");
 
   // Leaderboard sicher geschlossen
   if (leaderboardOverlay) {
     leaderboardOverlay.classList.add("hidden");
+  }
+
+  // -----------------------------
+  // Spielername (nur einmal fragen)
+  // -----------------------------
+
+  function getStoredPlayerName() {
+    const n = localStorage.getItem(PLAYER_NAME_KEY);
+    return n && n.trim() ? n.trim() : null;
+  }
+
+  function askPlayerNameOnce() {
+    let name = getStoredPlayerName();
+    if (name) return name;
+
+    // Solange fragen, bis etwas eingegeben wurde
+    while (!name) {
+      name = prompt("Bitte gib deinen Spielernamen ein:", "Player");
+      if (name === null) {
+        // User hat auf Abbrechen geklickt -> nochmal fragen
+        continue;
+      }
+      name = name.trim();
+    }
+
+    localStorage.setItem(PLAYER_NAME_KEY, name);
+    return name;
+  }
+
+  function updatePlayerNameTag() {
+    const name = getStoredPlayerName();
+    if (playerNameTag) {
+      playerNameTag.textContent = name ? `Player: ${name}` : "";
+    }
   }
 
   // -----------------------------
@@ -131,7 +171,6 @@ window.addEventListener("load", () => {
   }
 
   function demoStep() {
-    // nichts tun, wenn Demo aus oder Menü nicht sichtbar
     if (!isDemoActive || menu.classList.contains("hidden")) return;
 
     demoDirection = demoNextDirection;
@@ -182,7 +221,6 @@ window.addEventListener("load", () => {
     }
 
     if (demoApple && head.x === demoApple.x && head.y === demoApple.y) {
-      // wachsen
       demoApple = randomFreeCellDemo();
     } else {
       demoSnake.pop();
@@ -195,12 +233,10 @@ window.addEventListener("load", () => {
   // Event-Handler
   // -----------------------------
 
-  // Play-Button
   btnPlay.addEventListener("click", () => {
     startGame();
   });
 
-  // Level-Auswahl
   levelClassic.addEventListener("click", () => {
     gameMode = "classic";
     setActiveLevelButton("classic");
@@ -241,7 +277,7 @@ window.addEventListener("load", () => {
     if (controls) controls.style.display = "flex";
   });
 
-  // Leaderboard schließen, wenn man auf den dunklen Hintergrund tippt
+  // Leaderboard schließen, wenn man auf den Hintergrund tippt
   leaderboardOverlay.addEventListener("click", (e) => {
     if (e.target === leaderboardOverlay) {
       leaderboardOverlay.classList.add("hidden");
@@ -287,8 +323,8 @@ window.addEventListener("load", () => {
     nextDirection = { x: dx, y: dy };
   }
 
-  // Tap auf Canvas nach Game Over -> zurück zum Menü
-  canvas.addEventListener("click", () => {
+  // ⭐ überall tippen nach Game Over
+  document.addEventListener("click", () => {
     if (isGameOver) {
       isGameOver = false;
       showMenu(`Game Over! Score: ${score}`);
@@ -300,7 +336,6 @@ window.addEventListener("load", () => {
   // -----------------------------
 
   function startGame() {
-    // Demo im Menü stoppen
     stopDemo();
 
     resetGameState();
@@ -313,9 +348,7 @@ window.addEventListener("load", () => {
       clearInterval(gameLoopId);
     }
 
-    const speed =
-      gameMode === "hard" ? GAME_SPEED_HARD : GAME_SPEED_CLASSIC;
-
+    const speed = gameMode === "hard" ? GAME_SPEED_HARD : GAME_SPEED_CLASSIC;
     gameLoopId = setInterval(gameLoop, speed);
   }
 
@@ -351,7 +384,6 @@ window.addEventListener("load", () => {
   function showMenu(message) {
     menu.classList.remove("hidden");
     menuStatus.textContent = message;
-    // wenn Menü erscheint, Demo starten
     startDemo();
   }
 
@@ -385,7 +417,6 @@ window.addEventListener("load", () => {
     drawGame();
   }
 
-  // Kollisionsprüfungen
   function hitsWall(head) {
     return (
       head.x <= 0 ||
@@ -431,14 +462,11 @@ window.addEventListener("load", () => {
     apple = randomFreeCell();
   }
 
-  // 🔹 NEU: Safe-Zone direkt vor dem Start der Schlange
+  // Safe-Zone direkt vor dem Start der Schlange
   function isInStartSafeZone(cell) {
     const startX = Math.floor(tileCount / 2);
     const startY = Math.floor(tileCount / 2);
 
-    // Rechteck direkt vor der Schlange (sie schaut nach rechts)
-    // x: von startX bis startX + 4
-    // y: eine kleine Höhe um die Schlange herum (startY-1 bis startY+1)
     for (let dx = 0; dx <= 4; dx++) {
       for (let dy = -1; dy <= 1; dy++) {
         const sx = startX + dx;
@@ -451,8 +479,6 @@ window.addEventListener("load", () => {
     return false;
   }
 
-  // alle Steine sofort beim Start (nur im Hard-Mode)
-  // JEDES Hindernis ist ein 2x2-Block = 4 Zellen
   function setupObstacles() {
     obstacles = [];
     obstacleBlocks = [];
@@ -477,7 +503,7 @@ window.addEventListener("load", () => {
         !snake.some((p) => p.x === c.x && p.y === c.y) &&
         !(apple && apple.x === c.x && apple.y === c.y) &&
         !obstacles.some((o) => o.x === c.x && o.y === c.y) &&
-        !isInStartSafeZone(c)              // nicht in der Safe-Zone vor der Schlange
+        !isInStartSafeZone(c)
       );
 
       if (validBlock) {
@@ -489,7 +515,6 @@ window.addEventListener("load", () => {
     updateGemsDisplay();
   }
 
-  // freie Zelle (nicht Rand)
   function randomFreeCell() {
     for (let i = 0; i < 300; i++) {
       const cell = {
@@ -558,13 +583,11 @@ window.addEventListener("load", () => {
       return;
     }
 
-    let name = prompt("Neuer Highscore! Dein Name für das Global-Board?", "Player");
-    if (!name || !name.trim()) {
-      name = "Player";
-    }
+    // 👇 Kein prompt mehr – wir nehmen den gespeicherten Spielernamen
+    const name = getStoredPlayerName() || "Player";
 
     list.push({
-      name: name.trim(),
+      name,
       score: latestScore,
       mode: gameMode,
     });
@@ -612,7 +635,6 @@ window.addEventListener("load", () => {
     );
   }
 
-  // ganzen 2x2-Block zeichnen
   function drawObstacleBlock(originX, originY, color) {
     const size = tileSize * PIXEL_SCALE;
     const offset = tileSize * PIXEL_MARGIN;
@@ -626,12 +648,11 @@ window.addEventListener("load", () => {
     );
   }
 
-  // Snake als durchgehende Linie zeichnen
   function drawSnakeLine(snakeArray) {
     if (!snakeArray || snakeArray.length === 0) return;
 
     ctx.strokeStyle = PIXEL_COLOR;
-    ctx.lineWidth = tileSize * 0.7;  // Dicke der Schlange
+    ctx.lineWidth = tileSize * 0.7;
     ctx.lineCap = "round";
 
     ctx.beginPath();
@@ -693,12 +714,10 @@ window.addEventListener("load", () => {
       drawPixelCell(tileCount - 1, y, PIXEL_COLOR);
     }
 
-    // Hindernis-Blöcke
     obstacleBlocks.forEach((origin) => {
       drawObstacleBlock(origin.x, origin.y, PIXEL_COLOR);
     });
 
-    // Demo oder echtes Spiel?
     const useDemo =
       isDemoActive && !menu.classList.contains("hidden") && !isGameOver;
 
@@ -728,13 +747,20 @@ window.addEventListener("load", () => {
     }
   }
 
-  // 🔁 HIER geändert: Hard-Zahl immer 0
   function updateGemsDisplay() {
     if (!gemsEl) return;
     gemsEl.textContent = 0;
   }
 
-  // Startzustand: Demo im Menü starten
+  // -----------------------------
+  // Initialisierung
+  // -----------------------------
+
+  // 1. Spielername einmal abfragen (nur beim allerersten Start)
+  askPlayerNameOnce();
+  updatePlayerNameTag();
+
+  // 2. Demo starten & erstes Bild zeichnen
   startDemo();
   drawGame();
   updateGlobalLeaderboardDisplay();
