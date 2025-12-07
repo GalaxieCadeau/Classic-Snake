@@ -1,93 +1,112 @@
 <!DOCTYPE html>
 <html lang="de">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Classic Snake – Retro</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Classic Snake – Retro</title>
 
-  <!-- Pixel-Retro-Schrift -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+    <!-- Pixel-Retro-Schrift -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+    />
 
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <div id="game-root">
-    <!-- HUD oben links: nur aktueller Score + Steine -->
-    <div id="hud">
-      <div class="best-box">
-        <p class="current-score">
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="game-root">
+      <!-- SPIELFELD + TOUCH-STEUERUNG -->
+      <div id="game-area">
+        <!-- Canvas -->
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+        <!-- SCORE unter dem Spielfeld, links -->
+        <div id="scoreBar">
           Score: <span id="currentScore">0</span>
-        </p>
-        <p class="current-gems">
-        </p>
-      </div>
-    </div>
+        </div>
 
-    <!-- Spielfeld + Touch-Steuerung -->
-    <div id="game-area">
-      <canvas id="gameCanvas" width="400" height="400"></canvas>
+        <!-- Steuerkreuz (PlayStation-D-Pad-Layout) -->
+        <div class="controls">
+          <button id="btnUp"></button>
+          <button id="btnLeft"></button>
+          <button id="btnRight"></button>
+          <button id="btnDown"></button>
+        </div>
 
-      <!-- Steuerkreuz (PlayStation-D-Pad-Layout) -->
-      <div class="controls">
-        <button id="btnUp"></button>
-        <button id="btnLeft"></button>
-        <button id="btnRight"></button>
-        <button id="btnDown"></button>
-      </div>
+        <!-- Start-/Game-Over-Menü -->
+        <div id="menu" class="overlay">
+          <div class="menu-panel">
+            <!-- Titel -->
+            <h1>Classic Snake</h1>
 
-      <!-- Start-/Game-Over-Menü -->
-      <div id="menu" class="overlay">
-        <div class="menu-panel">
-          <h2 id="menuPixelTitle">CLASSIC SNAKE</h2>
-          <p id="playerNameTag" class="subtitle></p>
-          <h1>Classic Snake</h1><p class="subtitle">
-            Iss Äpfel, werde länger, berühr die Wand nicht!
-          </p>
-          <p id="menuStatus" class="status">
-            Tippe auf <strong>Play</strong>, um zu starten.
-          </p>
-          <button id="btnPlay" class="primary-btn">Play</button>
+            <!-- Spielername (wird per JS gesetzt) -->
+            <p id="playerNameTag" class="subtitle"></p>
 
-          <div class="level-select">
-            <span class="level-title">Level wählen:</span>
-            <div class="level-buttons">
-              <button id="levelClassic" class="level-btn active" data-mode="classic">
-                Level 1 – Classic
-              </button>
-              <button id="levelHard" class="level-btn" data-mode="hard">
-                Level 2 – Hard Mode
-              </button>
-              <!-- Leaderboard-Button -->
-              <button id="btnLeaderboard" class="level-btn">
-                Leaderboard
-              </button>
+            <!-- Untertitel -->
+            <p class="subtitle">
+              Iss Äpfel, werde länger, berühr die Wand nicht!
+            </p>
+
+            <!-- Statuszeile -->
+            <p id="menuStatus" class="status">
+              Tippe auf <strong>Play</strong>, um zu starten.
+            </p>
+
+            <!-- Play-Button -->
+            <button id="btnPlay" class="primary-btn">Play</button>
+
+            <!-- Level-Auswahl + Leaderboard -->
+            <div class="level-select">
+              <span class="level-title">Level wählen:</span>
+              <div class="level-buttons">
+                <button
+                  id="levelClassic"
+                  class="level-btn active"
+                  data-mode="classic"
+                >
+                  Level 1 – Classic
+                </button>
+                <button id="levelHard" class="level-btn" data-mode="hard">
+                  Level 2 – Hard Mode
+                </button>
+
+                <!-- Leaderboard-Button -->
+                <button id="btnLeaderboard" class="level-btn">
+                  Leaderboard
+                </button>
+              </div>
+              <small class="level-hint">
+                Hard Mode: zufällig spawnende Steine – Kollision = Game Over.
+              </small>
             </div>
-            <small class="level-hint">
-              Hard Mode: zufällig spawnende Steine – Kollision = Game Over.
-            </small>
+
+            <p class="version">Version 1.0.4 – Retro Edition</p>
           </div>
-
-          <p class="version">Version 1.0.4 – Retro Edition</p>
         </div>
-      </div>
 
-      <!-- Leaderboard-Overlay im Retro-Stil -->
-      <div id="leaderboardOverlay" class="overlay hidden">
-        <div class="menu-panel leaderboard-panel">
-          <h2>LEADERBOARD</h2>
-          <p class="lb-line">
-            Classic Best: <span id="lbClassic">0</span>
-          </p>
-          <p class="lb-line">
-            Hard Best:&nbsp;&nbsp;&nbsp;<span id="lbHard">0</span>
-          </p>
-          <p class="lb-hint">Tippe OK, um zurückzugehen.</p>
-          <button id="btnCloseLeaderboard" class="primary-btn">OK</button>
+        <!-- Leaderboard-Overlay im Retro-Stil -->
+        <div id="leaderboardOverlay" class="overlay hidden">
+          <div class="menu-panel leaderboard-panel">
+            <h2>LEADERBOARD</h2>
+
+            <p class="lb-line">
+              Classic Best: <span id="lbClassic">0</span>
+            </p>
+            <p class="lb-line">
+              Hard Best:&nbsp;&nbsp;&nbsp;<span id="lbHard">0</span>
+            </p>
+
+            <!-- (Optional) globale Top-10-Liste
+            <ul id="globalList"></ul>
+            -->
+
+            <p class="lb-hint">Tippe OK, um zurückzugehen.</p>
+            <button id="btnCloseLeaderboard" class="primary-btn">OK</button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <script src="game.js"></script>
-</body>
+    <script src="game.js"></script>
+  </body>
 </html>
