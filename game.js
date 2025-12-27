@@ -2,7 +2,7 @@ window.addEventListener("load", () => {
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
 
-  const tileCount = 30;
+  const tileCount = 14;
   const tileSize = canvas.width / tileCount;
 
   const BG_COLOR_OUTER = "#4e7a1e";
