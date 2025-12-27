@@ -1,5 +1,3 @@
-/* ============ GLOBAL ============ */
-
 * {
   box-sizing: border-box;
   margin: 0;
@@ -13,7 +11,6 @@ body {
   color: #f4f4f4;
 }
 
-/* Retro-Pixelfont überall */
 body,
 button,
 h1,
@@ -25,16 +22,11 @@ li {
   letter-spacing: 1px;
 }
 
-/* Scrollen erlauben, falls Canvas + Buttons höher als der Screen sind */
 body {
   overflow: auto;
-  /* Retro-Grün-Hintergrund wie Nokia */
   background: #6daa2a;
 }
 
-/* ============ SPIEL-LAYOUT ============ */
-
-/* Wurzel-Container – passt zu <div id="game-root"> */
 #game-root {
   position: relative;
   width: 100%;
@@ -47,7 +39,6 @@ body {
   padding: 16px 0 24px;
 }
 
-/* Spielfeld + Steuerung in einer Spalte zentriert */
 #game-area {
   position: relative;
   width: min(94vw, 800px);
@@ -58,18 +49,16 @@ body {
   gap: 16px;
 }
 
-/* Canvas – immer quadratisch & responsive */
 #gameCanvas {
   width: 100%;
   max-width: 100%;
-  aspect-ratio: 1 / 1;         /* quadratisch */
+  aspect-ratio: 1 / 1;
   background: #7fa450;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   box-shadow: 0 0 0 4px #000;
 }
 
-/* HUD oben links über dem Canvas */
 #hud {
   position: absolute;
   top: 0;
@@ -110,25 +99,20 @@ body {
   font-weight: 600;
 }
 
-/* ============ D-PAD / TOUCH-STEUERUNG ============ */
-
-/* Container für das Steuerkreuz – im normalen Flow, unter dem Canvas */
 .controls {
   position: relative;
   margin-top: 4px;
-  /* Gesamtgröße des Steuerkreuzes */
   width: clamp(210px, 48vmin, 320px);
-  aspect-ratio: 1 / 1;                 /* quadratisch */
+  aspect-ratio: 1 / 1;
   z-index: 5;
 }
 
-/* Buttons – unsichtbare, große Klickflächen (kein sichtbarer Kreis) */
 .controls button {
   position: absolute;
   overflow: hidden;
-  width: 46%;           /* etwas kleiner als 50% → Abstand zwischen Pfeilen */
+  width: 46%;
   height: 46%;
-  border-radius: 50%;   /* runde Hitbox */
+  border-radius: 50%;
   border: none;
   background: transparent;
   color: #000000;
@@ -140,7 +124,6 @@ body {
   transition: transform 0.1s;
 }
 
-/* Positionen der vier Buttons wie ein Kreuz */
 #btnUp {
   top: 0;
   left: 50%;
@@ -165,12 +148,10 @@ body {
   transform: translateY(-50%);
 }
 
-/* Klick-Feedback – nur leichte Bewegung der Pfeile */
 .controls button:active {
   transform: scale(0.9);
 }
 
-/* Pfeile als CSS-Dreiecke – größer & schwarz */
 .controls button::before {
   content: "";
   position: absolute;
@@ -182,31 +163,26 @@ body {
   border-style: solid;
 }
 
-/* Oben */
 #btnUp::before {
   border-width: 0 18px 30px 18px;
   border-color: transparent transparent #000000 transparent;
 }
 
-/* Unten */
 #btnDown::before {
   border-width: 30px 18px 0 18px;
   border-color: #000000 transparent transparent transparent;
 }
 
-/* Links */
 #btnLeft::before {
   border-width: 18px 30px 18px 0;
   border-color: transparent #000000 transparent transparent;
 }
 
-/* Rechts */
 #btnRight::before {
   border-width: 18px 0 18px 30px;
   border-color: transparent transparent transparent #000000;
 }
 
-/* etwas kleinere Steuerung auf sehr kleinen Displays */
 @media (max-width: 400px), (max-height: 700px) {
   .controls {
     width: clamp(170px, 40vmin, 260px);
@@ -216,8 +192,6 @@ body {
     font-size: 0.8rem;
   }
 }
-
-/* ============ OVERLAYS (MENÜ & GAME OVER) ============ */
 
 .overlay {
   position: fixed;
@@ -231,18 +205,18 @@ body {
   align-items: center;
   z-index: 20;
 }
+
 .overlay.hidden {
   display: none;
 }
 
-/* Menü-Overlay im Nokia-Stil */
 #menu.overlay {
   position: fixed;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #6daa2a; /* gleiche Farbe wie Spielfeld */
+  background: #6daa2a;
   z-index: 1000;
 }
 
@@ -250,10 +224,9 @@ body {
   display: none;
 }
 
-/* Zentrale Menü-Box */
 .menu-panel {
-  background: #4e7a1e;               /* dunkleres Grün – wie Spielfeldrand */
-  border: 4px solid #001600;         /* gleiche Farbe wie Rand/Snake */
+  background: #4e7a1e;
+  border: 4px solid #001600;
   box-shadow: none;
   padding: 32px 24px 28px;
   max-width: 420px;
@@ -261,13 +234,12 @@ body {
   text-align: center;
 }
 
-/* TITEL "Classic Snake" – SCHWARZ + GRÜNES BLINKEN */
 #menu .menu-panel h1 {
   font-size: 24px;
   letter-spacing: 0.3em;
   text-transform: uppercase;
   margin: 0 0 8px;
-  color: #000000 !important;                 /* schwarz erzwingen */
+  color: #000000 !important;
   text-shadow:
     0 0 2px #000000,
     0 0 4px #00ff3b,
@@ -276,7 +248,6 @@ body {
   animation: retroTitleBlink 1.4s infinite steps(2, start) !important;
 }
 
-/* Untertitel */
 .menu-panel .subtitle {
   font-size: 10px;
   line-height: 1.4;
@@ -284,7 +255,6 @@ body {
   color: #001600;
 }
 
-/* Spielername – klein, schwarz, NICHT blinkend */
 #playerNameTag {
   color: #000000;
   font-size: 10px;
@@ -292,14 +262,12 @@ body {
   animation: none !important;
 }
 
-/* Status-Text */
 #menuStatus.status {
   font-size: 9px;
   margin-bottom: 18px;
   color: #001600;
 }
 
-/* Großer Play-Button */
 .primary-btn,
 .secondary-btn {
   width: 100%;
@@ -340,15 +308,12 @@ body {
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* Versions-Text */
 .menu-panel .version {
   margin-top: 18px;
   font-size: 8px;
   color: #001600;
   opacity: 0.9;
 }
-
-/* ============ LEVEL-AUSWAHL ============ */
 
 .level-select {
   margin-top: 8px;
@@ -391,7 +356,6 @@ body {
   border-color: #00ff3b;
 }
 
-/* Hinweis-Text */
 .level-hint {
   display: block;
   margin-top: 8px;
@@ -400,9 +364,6 @@ body {
   color: #001600;
 }
 
-/* ============ LEADERBOARD ============ */
-
-/* Hintergrund komplett grün, Spiel dahinter verschwindet optisch */
 #leaderboardOverlay {
   background: #6daa2a;
 }
@@ -429,9 +390,6 @@ body {
   color: #001600;
 }
 
-/* ============ ANIMATIONEN ============ */
-
-/* Retro-Blinken für den Titel */
 @keyframes retroTitleBlink {
   0%, 70%, 100% {
     opacity: 1;
@@ -446,11 +404,12 @@ body {
     text-shadow: none;
   }
 }
+
 #scoreBar {
   width: 100%;
   text-align: left;
   margin-top: 6px;
   font-size: 12px;
-  color: #000000; /* SCHWARZ */
+  color: #000000;
   padding-left: 4px;
 }
