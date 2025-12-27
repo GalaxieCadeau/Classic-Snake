@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Classic Snake – Retro</title>
 
-    <!-- Pixel-Retro-Schrift -->
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
@@ -14,48 +13,30 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    
     <div id="game-root">
-      <!-- SPIELFELD + TOUCH-STEUERUNG -->
       <div id="game-area">
-        <!-- Canvas -->
         <canvas id="gameCanvas" width="400" height="400"></canvas>
-
-        <!-- SCORE unter dem Spielfeld, links -->
         <div id="scoreBar">
           Score: <span id="currentScore">0</span>
         </div>
-
-        <!-- Steuerkreuz (PlayStation-D-Pad-Layout) -->
         <div class="controls">
           <button id="btnUp"></button>
           <button id="btnLeft"></button>
           <button id="btnRight"></button>
           <button id="btnDown"></button>
         </div>
-
-        <!-- Start-/Game-Over-Menü -->
         <div id="menu" class="overlay">
           <div class="menu-panel">
-            <!-- Titel -->
             <h1>Classic Snake</h1>
-
-            <!-- Spielername (wird per JS gesetzt) -->
             <p id="playerNameTag" class="subtitle"></p>
-
-            <!-- Untertitel -->
             <p class="subtitle">
               Iss Äpfel, werde länger, berühr die Wand nicht!
             </p>
-
-            <!-- Statuszeile -->
             <p id="menuStatus" class="status">
               Tippe auf <strong>Play</strong>, um zu starten.
             </p>
-
-            <!-- Play-Button -->
             <button id="btnPlay" class="primary-btn">Play</button>
-
-            <!-- Level-Auswahl + Leaderboard -->
             <div class="level-select">
               <span class="level-title">Level wählen:</span>
               <div class="level-buttons">
@@ -69,8 +50,6 @@
                 <button id="levelHard" class="level-btn" data-mode="hard">
                   Level 2 – Hard Mode
                 </button>
-
-                <!-- Leaderboard-Button -->
                 <button id="btnLeaderboard" class="level-btn">
                   Leaderboard
                 </button>
@@ -80,11 +59,9 @@
               </small>
             </div>
 
-            <p class="version">Version 1.0.4 – Retro Edition</p>
+            <p class="version">Version 1.0.6 – Retro Edition</p>
           </div>
         </div>
-
-        <!-- Leaderboard-Overlay im Retro-Stil -->
         <div id="leaderboardOverlay" class="overlay hidden">
           <div class="menu-panel leaderboard-panel">
             <h2>LEADERBOARD</h2>
@@ -95,11 +72,7 @@
             <p class="lb-line">
               Hard Best:&nbsp;&nbsp;&nbsp;<span id="lbHard">0</span>
             </p>
-
-            <!-- (Optional) globale Top-10-Liste
-            <ul id="globalList"></ul>
-            -->
-
+            
             <p class="lb-hint">Tippe OK, um zurückzugehen.</p>
             <button id="btnCloseLeaderboard" class="primary-btn">OK</button>
           </div>
