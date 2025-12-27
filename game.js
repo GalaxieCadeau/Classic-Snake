@@ -2,7 +2,7 @@ window.addEventListener("load", () => {
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
 
-  const tileCount = 19;
+  const tileCount = 17;
   const tileSize = canvas.width / tileCount;
 
   const BG_COLOR_OUTER = "#4e7a1e";
@@ -15,7 +15,7 @@ window.addEventListener("load", () => {
   const SNAKE_COLOR = "#000000";
   const EYE_COLOR = "#ffffff";
 
-  const PIXEL_SCALE = 0.7;
+  const PIXEL_SCALE = 1.0;
   const PIXEL_MARGIN = (1 - PIXEL_SCALE) / 2;
 
   let snake;
