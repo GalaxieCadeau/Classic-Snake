@@ -3,6 +3,11 @@ window.addEventListener("load", () => {
   const ctx = canvas.getContext("2d");
 
   const tileCount = 20;
+  window.addEventListener("load", () => {
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const tileCount = 20;
   const tileSize = canvas.width / tileCount;
 
   const BG_COLOR_OUTER = "#4e7a1e";
@@ -31,7 +36,7 @@ window.addEventListener("load", () => {
   let obstacleBlocks = [];
   const OBSTACLE_COUNT = 10;
 
-  const GAME_SPEED_CLASSIC = 240;
+  const GAME_SPEED_CLASSIC = 200;
   const GAME_SPEED_HARD = 260;
 
   const BEST_KEY_CLASSIC = "snake_best_classic";
@@ -680,4 +685,54 @@ window.addEventListener("load", () => {
   startDemo();
   drawGame();
   updateGlobalLeaderboardDisplay();
-});
+});const tileSize = canvas.width / tileCount;
+
+  const BG_COLOR_OUTER = "#4e7a1e";
+  const BG_COLOR_INNER = "#6daa2a";
+  const FIELD_LIGHT = "#6daa2a"; // hellgrün
+  const FIELD_DARK = "#5f9824";  // dunkelgrün (anpassen wenn du willst)
+
+  const PIXEL_COLOR = "#001600";
+  const APPLE_COLOR = "#b00000";
+  const SNAKE_COLOR = "#000000";
+  const EYE_COLOR = "#ffffff";
+
+  const PIXEL_SCALE = 0.7;
+  const PIXEL_MARGIN = (1 - PIXEL_SCALE) / 2;
+
+  let snake;
+  let direction;
+  let nextDirection;
+  let apple;
+  let score;
+  let gameLoopId = null;
+  let gameMode = "classic";
+  let isGameOver = false;
+
+  let obstacles = [];
+  let obstacleBlocks = [];
+  const OBSTACLE_COUNT = 10;
+
+  const GAME_SPEED_CLASSIC = 200;
+  const GAME_SPEED_HARD = 260;
+
+  const BEST_KEY_CLASSIC = "snake_best_classic";
+  const BEST_KEY_HARD = "snake_best_hard";
+  const GLOBAL_KEY = "snake_leaderboard_global";
+  const PLAYER_NAME_KEY = "snake_player_name";
+
+  const DEMO_SPEED = 250;
+  let demoSnake = null;
+  let demoDirection = null;
+  let demoNextDirection = null;
+  let demoApple = null;
+  let demoLoopId = null;
+  let isDemoActive = false;
+
+  const btnPlay = document.getElementById("btnPlay");
+  const levelClassic = document.getElementById("levelClassic");
+  const levelHard = document.getElementById("levelHard");
+  const menu = document.getElementById("menu");
+  const menuStatus = document.getElementById("menuStatus");
+
+  const btnLeaderboard = document.getElementById("btnL
