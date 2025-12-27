@@ -2,13 +2,18 @@ window.addEventListener("load", () => {
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
 
-  const tileCount = 23;
+  const tileCount = 20;
   const tileSize = canvas.width / tileCount;
 
   const BG_COLOR_OUTER = "#4e7a1e";
   const BG_COLOR_INNER = "#6daa2a";
+  const FIELD_LIGHT = "#6daa2a"; // hellgrün
+  const FIELD_DARK = "#5f9824";  // dunkelgrün (anpassen wenn du willst)
+
   const PIXEL_COLOR = "#001600";
   const APPLE_COLOR = "#b00000";
+  const SNAKE_COLOR = "#000000";
+  const EYE_COLOR = "#ffffff";
 
   const PIXEL_SCALE = 0.7;
   const PIXEL_MARGIN = (1 - PIXEL_SCALE) / 2;
@@ -24,7 +29,7 @@ window.addEventListener("load", () => {
 
   let obstacles = [];
   let obstacleBlocks = [];
-  const OBSTACLE_COUNT = 15;
+  const OBSTACLE_COUNT = 10;
 
   const GAME_SPEED_CLASSIC = 200;
   const GAME_SPEED_HARD = 260;
@@ -102,7 +107,7 @@ window.addEventListener("load", () => {
         x: 1 + Math.floor(Math.random() * (tileCount - 2)),
         y: 1 + Math.floor(Math.random() * (tileCount - 2)),
       };
-      const onSnake = demoSnake?.some(p => p.x === cell.x && p.y === cell.y);
+      const onSnake = demoSnake?.some((p) => p.x === cell.x && p.y === cell.y);
       if (!onSnake) return cell;
     }
     return { x: 5, y: 5 };
@@ -158,9 +163,9 @@ window.addEventListener("load", () => {
         { x: 0, y: 1 },
         { x: -1, y: 0 },
         { x: 1, y: 0 },
-      ].filter(d => !(d.x === -demoDirection.x && d.y === -demoDirection.y));
+      ].filter((d) => !(d.x === -demoDirection.x && d.y === -demoDirection.y));
 
-      const safeDirs = dirs.filter(d => {
+      const safeDirs = dirs.filter((d) => {
         const nx = demoSnake[0].x + d.x;
         const ny = demoSnake[0].y + d.y;
         return nx > 0 && ny > 0 && nx < tileCount - 1 && ny < tileCount - 1;
@@ -370,7 +375,7 @@ window.addEventListener("load", () => {
   }
 
   function hitsObstacle(head) {
-    return obstacles.some(o => o.x === head.x && o.y === head.y);
+    return obstacles.some((o) => o.x === head.x && o.y === head.y);
   }
 
   function gameOver() {
@@ -423,15 +428,16 @@ window.addEventListener("load", () => {
         { x: origin.x + 1, y: origin.y + 1 },
       ];
 
-      const validBlock = blockCells.every(c =>
-        c.x > 0 &&
-        c.y > 0 &&
-        c.x < tileCount - 1 &&
-        c.y < tileCount - 1 &&
-        !snake.some(p => p.x === c.x && p.y === c.y) &&
-        !(apple && apple.x === c.x && apple.y === c.y) &&
-        !obstacles.some(o => o.x === c.x && o.y === c.y) &&
-        !isInStartSafeZone(c)
+      const validBlock = blockCells.every(
+        (c) =>
+          c.x > 0 &&
+          c.y > 0 &&
+          c.x < tileCount - 1 &&
+          c.y < tileCount - 1 &&
+          !snake.some((p) => p.x === c.x && p.y === c.y) &&
+          !(apple && apple.x === c.x && apple.y === c.y) &&
+          !obstacles.some((o) => o.x === c.x && o.y === c.y) &&
+          !isInStartSafeZone(c)
       );
 
       if (validBlock) {
@@ -450,9 +456,9 @@ window.addEventListener("load", () => {
         y: 1 + Math.floor(Math.random() * (tileCount - 2)),
       };
 
-      const onSnake = snake.some(p => p.x === cell.x && p.y === cell.y);
+      const onSnake = snake.some((p) => p.x === cell.x && p.y === cell.y);
       const onApple = apple && apple.x === cell.x && apple.y === cell.y;
-      const onObstacle = obstacles.some(o => o.x === cell.x && o.y === cell.y);
+      const onObstacle = obstacles.some((o) => o.x === cell.x && o.y === cell.y);
 
       if (!onSnake && !onApple && !onObstacle) return cell;
     }
@@ -545,27 +551,61 @@ window.addEventListener("load", () => {
     );
   }
 
-  function drawSnakeLine(snakeArray) {
+  // Snake als Kachel-Blöcke + weiße Augen
+  function drawSnakeBlocks(snakeArray, dir) {
     if (!snakeArray || snakeArray.length === 0) return;
 
-    ctx.strokeStyle = PIXEL_COLOR;
-    ctx.lineWidth = tileSize * 0.7;
-    ctx.lineCap = "round";
-
-    ctx.beginPath();
-    ctx.moveTo(
-      snakeArray[0].x * tileSize + tileSize / 2,
-      snakeArray[0].y * tileSize + tileSize / 2
-    );
-
-    for (let i = 1; i < snakeArray.length; i++) {
-      ctx.lineTo(
-        snakeArray[i].x * tileSize + tileSize / 2,
-        snakeArray[i].y * tileSize + tileSize / 2
-      );
+    // Körper
+    for (let i = snakeArray.length - 1; i >= 1; i--) {
+      drawPixelCell(snakeArray[i].x, snakeArray[i].y, SNAKE_COLOR);
     }
 
-    ctx.stroke();
+    // Kopf
+    const head = snakeArray[0];
+    drawPixelCell(head.x, head.y, SNAKE_COLOR);
+
+    // Augen
+    drawSnakeEyesOnHead(head, dir);
+  }
+
+  function drawSnakeEyesOnHead(head, dir) {
+    const size = tileSize * PIXEL_SCALE;
+    const offset = tileSize * PIXEL_MARGIN;
+
+    const x0 = head.x * tileSize + offset;
+    const y0 = head.y * tileSize + offset;
+
+    const eyeSize = size * 0.22;
+    const inset = size * 0.16;
+    const spread = size * 0.32;
+
+    let e1x, e1y, e2x, e2y;
+
+    if (dir && dir.x === 1) { // rechts
+      e1x = x0 + size - inset - eyeSize;
+      e2x = x0 + size - inset - eyeSize;
+      e1y = y0 + inset;
+      e2y = y0 + inset + spread;
+    } else if (dir && dir.x === -1) { // links
+      e1x = x0 + inset;
+      e2x = x0 + inset;
+      e1y = y0 + inset;
+      e2y = y0 + inset + spread;
+    } else if (dir && dir.y === 1) { // runter
+      e1y = y0 + size - inset - eyeSize;
+      e2y = y0 + size - inset - eyeSize;
+      e1x = x0 + inset;
+      e2x = x0 + inset + spread;
+    } else { // hoch (default)
+      e1y = y0 + inset;
+      e2y = y0 + inset;
+      e1x = x0 + inset;
+      e2x = x0 + inset + spread;
+    }
+
+    ctx.fillStyle = EYE_COLOR;
+    ctx.fillRect(e1x, e1y, eyeSize, eyeSize);
+    ctx.fillRect(e2x, e2y, eyeSize, eyeSize);
   }
 
   function drawGameOverOverlay() {
@@ -581,48 +621,49 @@ window.addEventListener("load", () => {
     ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 10);
 
     ctx.font = "10px 'Press Start 2P', monospace";
-    ctx.fillText(
-      "Tippe, um fortzufahren",
-      canvas.width / 2,
-      canvas.height / 2 + 24
-    );
+    ctx.fillText("Tippe, um fortzufahren", canvas.width / 2, canvas.height / 2 + 24);
   }
 
   function drawGame() {
+    // Außenhintergrund
     ctx.fillStyle = BG_COLOR_OUTER;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    const borderPx = tileSize * 0.5;
-    ctx.fillStyle = BG_COLOR_INNER;
-    ctx.fillRect(
-      borderPx,
-      borderPx,
-      canvas.width - borderPx * 2,
-      canvas.height - borderPx * 2
-    );
+    // ✅ Innenfläche als Kachel-Muster (hell/dunkel)
+    for (let y = 1; y < tileCount - 1; y++) {
+      for (let x = 1; x < tileCount - 1; x++) {
+        const isDark = (x + y) % 2 === 0;
+        ctx.fillStyle = isDark ? FIELD_DARK : FIELD_LIGHT;
+        ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+      }
+    }
 
+    // Rahmen (Pixel-Style)
     for (let x = 0; x < tileCount; x++) {
       drawPixelCell(x, 0, PIXEL_COLOR);
       drawPixelCell(x, tileCount - 1, PIXEL_COLOR);
     }
-
     for (let y = 1; y < tileCount - 1; y++) {
       drawPixelCell(0, y, PIXEL_COLOR);
       drawPixelCell(tileCount - 1, y, PIXEL_COLOR);
     }
 
-    obstacleBlocks.forEach(o =>
-      drawObstacleBlock(o.x, o.y, PIXEL_COLOR)
-    );
+    // Hindernisse
+    obstacleBlocks.forEach((o) => drawObstacleBlock(o.x, o.y, PIXEL_COLOR));
 
-    const useDemo =
-      isDemoActive && !menu.classList.contains("hidden") && !isGameOver;
+    const useDemo = isDemoActive && !menu.classList.contains("hidden") && !isGameOver;
 
     const appleToDraw = useDemo ? demoApple : apple;
     const snakeToDraw = useDemo ? demoSnake : snake;
 
+    // Apfel
     if (appleToDraw) drawPixelCell(appleToDraw.x, appleToDraw.y, APPLE_COLOR);
-    if (snakeToDraw) drawSnakeLine(snakeToDraw);
+
+    // Snake
+    if (snakeToDraw && snakeToDraw.length) {
+      drawSnakeBlocks(snakeToDraw, useDemo ? demoDirection : direction);
+    }
+
     if (isGameOver) drawGameOverOverlay();
   }
 
