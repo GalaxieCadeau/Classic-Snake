@@ -1,55 +1,40 @@
-// Classic Snake – Retro Edition
-// passt zu deiner index.html
-
 window.addEventListener("load", () => {
-  // Canvas & Kontext
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
 
-  // Spielfeld
-  const tileCount = 23;              // 23x23 Felder
+  const tileCount = 23;
   const tileSize = canvas.width / tileCount;
 
-  // --- Retro-Farben & Pixel-Stil ---
-  const BG_COLOR_OUTER = "#4e7a1e";  // dunkleres Grün
-  const BG_COLOR_INNER = "#6daa2a";  // helleres Grün
-  const PIXEL_COLOR    = "#001600";  // Snake, Rand, Steine
-  const APPLE_COLOR    = "#b00000";  // Apfel
+  const BG_COLOR_OUTER = "#4e7a1e";
+  const BG_COLOR_INNER = "#6daa2a";
+  const PIXEL_COLOR = "#001600";
+  const APPLE_COLOR = "#b00000";
 
-  const PIXEL_SCALE  = 0.7;
+  const PIXEL_SCALE = 0.7;
   const PIXEL_MARGIN = (1 - PIXEL_SCALE) / 2;
 
-  // Spiel-Status
   let snake;
   let direction;
   let nextDirection;
   let apple;
   let score;
   let gameLoopId = null;
-  let gameMode = "classic"; // "classic" oder "hard"
+  let gameMode = "classic";
   let isGameOver = false;
 
-  // Hindernisse (Steine) im Hard-Mode
-  let obstacles = [];          // einzelne Zellen (für Kollision)
-  let obstacleBlocks = [];     // Blöcke (oben-links, fürs Zeichnen)
-  const OBSTACLE_COUNT = 15;   // Anzahl 2x2-Blöcke im Hard-Mode
+  let obstacles = [];
+  let obstacleBlocks = [];
+  const OBSTACLE_COUNT = 15;
 
-  // Geschwindigkeiten
   const GAME_SPEED_CLASSIC = 200;
-  const GAME_SPEED_HARD    = 260;
+  const GAME_SPEED_HARD = 260;
 
-  // Highscore-Keys (lokal)
   const BEST_KEY_CLASSIC = "snake_best_classic";
-  const BEST_KEY_HARD    = "snake_best_hard";
+  const BEST_KEY_HARD = "snake_best_hard";
+  const GLOBAL_KEY = "snake_leaderboard_global";
+  const PLAYER_NAME_KEY = "snake_player_name";
 
-  // Globales Leaderboard (Top 10, lokal)
-  const GLOBAL_KEY       = "snake_leaderboard_global";
-
-  // Spielername (nur EINMAL abfragen)
-  const PLAYER_NAME_KEY  = "snake_player_name";
-
-  // 🔹 Demo-Snake im Menü (nur Hintergrund)
-  const DEMO_SPEED = 250;   // ms pro Schritt
+  const DEMO_SPEED = 250;
   let demoSnake = null;
   let demoDirection = null;
   let demoNextDirection = null;
@@ -57,7 +42,6 @@ window.addEventListener("load", () => {
   let demoLoopId = null;
   let isDemoActive = false;
 
-  // DOM-Elemente
   const btnPlay = document.getElementById("btnPlay");
   const levelClassic = document.getElementById("levelClassic");
   const levelHard = document.getElementById("levelHard");
@@ -80,18 +64,11 @@ window.addEventListener("load", () => {
   const btnRight = document.getElementById("btnRight");
 
   const controls = document.querySelector(".controls");
-
-  // NEU: Tag für den Spielernamen im Menü
   const playerNameTag = document.getElementById("playerNameTag");
 
-  // Leaderboard sicher geschlossen
   if (leaderboardOverlay) {
     leaderboardOverlay.classList.add("hidden");
   }
-
-  // -----------------------------
-  // Spielername (nur einmal fragen)
-  // -----------------------------
 
   function getStoredPlayerName() {
     const n = localStorage.getItem(PLAYER_NAME_KEY);
@@ -102,13 +79,9 @@ window.addEventListener("load", () => {
     let name = getStoredPlayerName();
     if (name) return name;
 
-    // Solange fragen, bis etwas eingegeben wurde
     while (!name) {
       name = prompt("Bitte gib deinen Spielernamen ein:", "Player");
-      if (name === null) {
-        // User hat auf Abbrechen geklickt -> nochmal fragen
-        continue;
-      }
+      if (name === null) continue;
       name = name.trim();
     }
 
@@ -123,17 +96,12 @@ window.addEventListener("load", () => {
     }
   }
 
-  // -----------------------------
-  // Demo-Snake Funktionen
-  // -----------------------------
-
   function randomFreeCellDemo() {
     for (let i = 0; i < 300; i++) {
       const cell = {
         x: 1 + Math.floor(Math.random() * (tileCount - 2)),
         y: 1 + Math.floor(Math.random() * (tileCount - 2)),
       };
-
       const onSnake = demoSnake?.some(p => p.x === cell.x && p.y === cell.y);
       if (!onSnake) return cell;
     }
@@ -141,21 +109,20 @@ window.addEventListener("load", () => {
   }
 
   function startDemo() {
-    // Demo startet nur, wenn Menü sichtbar ist
     if (menu.classList.contains("hidden")) return;
 
     const cx = Math.floor(tileCount / 2);
     const cy = Math.floor(tileCount / 2);
 
     demoSnake = [
-      { x: cx,     y: cy },
+      { x: cx, y: cy },
       { x: cx - 1, y: cy },
       { x: cx - 2, y: cy },
     ];
-    demoDirection     = { x: 1, y: 0 };
-    demoNextDirection = { x: 1, y: 0 };
-    demoApple         = randomFreeCellDemo();
 
+    demoDirection = { x: 1, y: 0 };
+    demoNextDirection = { x: 1, y: 0 };
+    demoApple = randomFreeCellDemo();
     isDemoActive = true;
 
     if (demoLoopId) clearInterval(demoLoopId);
@@ -180,7 +147,6 @@ window.addEventListener("load", () => {
       y: demoSnake[0].y + demoDirection.y,
     };
 
-    // Wenn Wand vor uns -> neue Richtung wählen
     if (
       head.x <= 0 ||
       head.y <= 0 ||
@@ -188,10 +154,10 @@ window.addEventListener("load", () => {
       head.y >= tileCount - 1
     ) {
       const dirs = [
-        { x: 0,  y: -1 },
-        { x: 0,  y: 1 },
+        { x: 0, y: -1 },
+        { x: 0, y: 1 },
         { x: -1, y: 0 },
-        { x: 1,  y: 0 },
+        { x: 1, y: 0 },
       ].filter(d => !(d.x === -demoDirection.x && d.y === -demoDirection.y));
 
       const safeDirs = dirs.filter(d => {
@@ -201,9 +167,9 @@ window.addEventListener("load", () => {
       });
 
       const options = safeDirs.length ? safeDirs : dirs;
-      const choice  = options[Math.floor(Math.random() * options.length)];
+      const choice = options[Math.floor(Math.random() * options.length)];
       demoNextDirection = choice;
-      demoDirection     = choice;
+      demoDirection = choice;
 
       head = {
         x: demoSnake[0].x + demoDirection.x,
@@ -213,7 +179,6 @@ window.addEventListener("load", () => {
 
     demoSnake.unshift(head);
 
-    // Wenn sich die Demo selbst beißt -> kurz neu starten
     if (demoSnake.some((seg, i) => i > 0 && seg.x === head.x && seg.y === head.y)) {
       startDemo();
       drawGame();
@@ -229,13 +194,7 @@ window.addEventListener("load", () => {
     drawGame();
   }
 
-  // -----------------------------
-  // Event-Handler
-  // -----------------------------
-
-  btnPlay.addEventListener("click", () => {
-    startGame();
-  });
+  btnPlay.addEventListener("click", startGame);
 
   levelClassic.addEventListener("click", () => {
     gameMode = "classic";
@@ -254,30 +213,22 @@ window.addEventListener("load", () => {
     if (mode === "hard") levelHard.classList.add("active");
   }
 
-  // Leaderboard öffnen
   btnLeaderboard.addEventListener("click", () => {
-    const bestClassic = getBestScore("classic");
-    const bestHard = getBestScore("hard");
-
-    if (lbClassicEl) lbClassicEl.textContent = bestClassic;
-    if (lbHardEl)    lbHardEl.textContent = bestHard;
+    if (lbClassicEl) lbClassicEl.textContent = getBestScore("classic");
+    if (lbHardEl) lbHardEl.textContent = getBestScore("hard");
 
     updateGlobalLeaderboardDisplay();
-
     hideMenu();
     leaderboardOverlay.classList.remove("hidden");
-
     if (controls) controls.style.display = "none";
   });
 
-  // Leaderboard per OK schließen
   btnCloseLeaderboard.addEventListener("click", () => {
     leaderboardOverlay.classList.add("hidden");
     showMenu("Tippe auf PLAY, um zu starten.");
     if (controls) controls.style.display = "flex";
   });
 
-  // Leaderboard schließen, wenn man auf den Hintergrund tippt
   leaderboardOverlay.addEventListener("click", (e) => {
     if (e.target === leaderboardOverlay) {
       leaderboardOverlay.classList.add("hidden");
@@ -286,7 +237,6 @@ window.addEventListener("load", () => {
     }
   });
 
-  // Keyboard-Steuerung
   document.addEventListener("keydown", (e) => {
     switch (e.key) {
       case "ArrowUp":
@@ -312,7 +262,6 @@ window.addEventListener("load", () => {
     }
   });
 
-  // Touch-Steuerung
   btnUp.addEventListener("click", () => setDirection(0, -1));
   btnDown.addEventListener("click", () => setDirection(0, 1));
   btnLeft.addEventListener("click", () => setDirection(-1, 0));
@@ -323,7 +272,6 @@ window.addEventListener("load", () => {
     nextDirection = { x: dx, y: dy };
   }
 
-  // ⭐ überall tippen nach Game Over
   document.addEventListener("click", () => {
     if (isGameOver) {
       isGameOver = false;
@@ -331,23 +279,15 @@ window.addEventListener("load", () => {
     }
   });
 
-  // -----------------------------
-  // Spiel-Start / Reset
-  // -----------------------------
-
   function startGame() {
     stopDemo();
-
     resetGameState();
     hideMenu();
 
     leaderboardOverlay.classList.add("hidden");
     if (controls) controls.style.display = "flex";
 
-    if (gameLoopId) {
-      clearInterval(gameLoopId);
-    }
-
+    if (gameLoopId) clearInterval(gameLoopId);
     const speed = gameMode === "hard" ? GAME_SPEED_HARD : GAME_SPEED_CLASSIC;
     gameLoopId = setInterval(gameLoop, speed);
   }
@@ -386,10 +326,6 @@ window.addEventListener("load", () => {
     menuStatus.textContent = message;
     startDemo();
   }
-
-  // -----------------------------
-  // Game Loop
-  // -----------------------------
 
   function gameLoop() {
     direction = nextDirection;
@@ -434,7 +370,7 @@ window.addEventListener("load", () => {
   }
 
   function hitsObstacle(head) {
-    return obstacles.some((o) => o.x === head.x && o.y === head.y);
+    return obstacles.some(o => o.x === head.x && o.y === head.y);
   }
 
   function gameOver() {
@@ -449,20 +385,14 @@ window.addEventListener("load", () => {
     }
 
     maybeAddToGlobalLeaderboard(score);
-
     isGameOver = true;
     drawGame();
   }
-
-  // -----------------------------
-  // Objekte platzieren
-  // -----------------------------
 
   function spawnApple() {
     apple = randomFreeCell();
   }
 
-  // Safe-Zone direkt vor dem Start der Schlange
   function isInStartSafeZone(cell) {
     const startX = Math.floor(tileCount / 2);
     const startY = Math.floor(tileCount / 2);
@@ -471,9 +401,7 @@ window.addEventListener("load", () => {
       for (let dy = -1; dy <= 1; dy++) {
         const sx = startX + dx;
         const sy = startY + dy;
-        if (cell.x === sx && cell.y === sy) {
-          return true;
-        }
+        if (cell.x === sx && cell.y === sy) return true;
       }
     }
     return false;
@@ -491,18 +419,18 @@ window.addEventListener("load", () => {
       const blockCells = [
         origin,
         { x: origin.x + 1, y: origin.y },
-        { x: origin.x,     y: origin.y + 1 },
+        { x: origin.x, y: origin.y + 1 },
         { x: origin.x + 1, y: origin.y + 1 },
       ];
 
-      const validBlock = blockCells.every((c) =>
+      const validBlock = blockCells.every(c =>
         c.x > 0 &&
         c.y > 0 &&
         c.x < tileCount - 1 &&
         c.y < tileCount - 1 &&
-        !snake.some((p) => p.x === c.x && p.y === c.y) &&
+        !snake.some(p => p.x === c.x && p.y === c.y) &&
         !(apple && apple.x === c.x && apple.y === c.y) &&
-        !obstacles.some((o) => o.x === c.x && o.y === c.y) &&
+        !obstacles.some(o => o.x === c.x && o.y === c.y) &&
         !isInStartSafeZone(c)
       );
 
@@ -522,25 +450,14 @@ window.addEventListener("load", () => {
         y: 1 + Math.floor(Math.random() * (tileCount - 2)),
       };
 
-      const onSnake = snake.some(
-        (p) => p.x === cell.x && p.y === cell.y
-      );
-      const onApple =
-        apple && apple.x === cell.x && apple.y === cell.y;
-      const onObstacle = obstacles.some(
-        (o) => o.x === cell.x && o.y === cell.y
-      );
+      const onSnake = snake.some(p => p.x === cell.x && p.y === cell.y);
+      const onApple = apple && apple.x === cell.x && apple.y === cell.y;
+      const onObstacle = obstacles.some(o => o.x === cell.x && o.y === cell.y);
 
-      if (!onSnake && !onApple && !onObstacle) {
-        return cell;
-      }
+      if (!onSnake && !onApple && !onObstacle) return cell;
     }
     return null;
   }
-
-  // -----------------------------
-  // Highscores (lokal)
-  // -----------------------------
 
   function getBestScore(mode) {
     const key = mode === "hard" ? BEST_KEY_HARD : BEST_KEY_CLASSIC;
@@ -553,18 +470,13 @@ window.addEventListener("load", () => {
     localStorage.setItem(key, String(value));
   }
 
-  // -----------------------------
-  // Globales Leaderboard (Top 10)
-  // -----------------------------
-
   function loadGlobalLeaderboard() {
     const raw = localStorage.getItem(GLOBAL_KEY);
     if (!raw) return [];
     try {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed;
-      return [];
-    } catch (e) {
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
       return [];
     }
   }
@@ -577,21 +489,12 @@ window.addEventListener("load", () => {
     if (!latestScore || latestScore <= 0) return;
 
     let list = loadGlobalLeaderboard();
-
     const minScore = list.length >= 10 ? list[list.length - 1].score : 0;
-    if (list.length >= 10 && latestScore <= minScore) {
-      return;
-    }
+    if (list.length >= 10 && latestScore <= minScore) return;
 
-    // 👇 Kein prompt mehr – wir nehmen den gespeicherten Spielernamen
     const name = getStoredPlayerName() || "Player";
 
-    list.push({
-      name,
-      score: latestScore,
-      mode: gameMode,
-    });
-
+    list.push({ name, score: latestScore, mode: gameMode });
     list.sort((a, b) => b.score - a.score);
     list = list.slice(0, 10);
 
@@ -611,21 +514,16 @@ window.addEventListener("load", () => {
       return;
     }
 
-    list.slice(0, 10).forEach((entry, index) => {
+    list.forEach((entry, index) => {
       const li = document.createElement("li");
       li.textContent = `${index + 1}. ${entry.name} – ${entry.score} (${entry.mode})`;
       globalListEl.appendChild(li);
     });
   }
 
-  // -----------------------------
-  // Zeichnen – Nokia-Style
-  // -----------------------------
-
   function drawPixelCell(gridX, gridY, color) {
     const size = tileSize * PIXEL_SCALE;
     const offset = tileSize * PIXEL_MARGIN;
-
     ctx.fillStyle = color;
     ctx.fillRect(
       gridX * tileSize + offset,
@@ -638,7 +536,6 @@ window.addEventListener("load", () => {
   function drawObstacleBlock(originX, originY, color) {
     const size = tileSize * PIXEL_SCALE;
     const offset = tileSize * PIXEL_MARGIN;
-
     ctx.fillStyle = color;
     ctx.fillRect(
       originX * tileSize + offset,
@@ -656,32 +553,31 @@ window.addEventListener("load", () => {
     ctx.lineCap = "round";
 
     ctx.beginPath();
-
-    const startX = snakeArray[0].x * tileSize + tileSize / 2;
-    const startY = snakeArray[0].y * tileSize + tileSize / 2;
-    ctx.moveTo(startX, startY);
+    ctx.moveTo(
+      snakeArray[0].x * tileSize + tileSize / 2,
+      snakeArray[0].y * tileSize + tileSize / 2
+    );
 
     for (let i = 1; i < snakeArray.length; i++) {
-      const px = snakeArray[i].x * tileSize + tileSize / 2;
-      const py = snakeArray[i].y * tileSize + tileSize / 2;
-      ctx.lineTo(px, py);
+      ctx.lineTo(
+        snakeArray[i].x * tileSize + tileSize / 2,
+        snakeArray[i].y * tileSize + tileSize / 2
+      );
     }
 
     ctx.stroke();
   }
 
   function drawGameOverOverlay() {
-    ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+    ctx.fillStyle = "rgba(0,0,0,0.6)";
     ctx.fillRect(0, canvas.height / 2 - 60, canvas.width, 120);
 
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-
-    ctx.fillStyle = "#000000";
     ctx.font = "24px 'Press Start 2P', monospace";
+    ctx.fillStyle = "#000";
     ctx.fillText("GAME OVER", canvas.width / 2 + 2, canvas.height / 2 - 10 + 2);
-
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = "#fff";
     ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 10);
 
     ctx.font = "10px 'Press Start 2P', monospace";
@@ -701,7 +597,7 @@ window.addEventListener("load", () => {
     ctx.fillRect(
       borderPx,
       borderPx,
-      canvas.width  - borderPx * 2,
+      canvas.width - borderPx * 2,
       canvas.height - borderPx * 2
     );
 
@@ -709,14 +605,15 @@ window.addEventListener("load", () => {
       drawPixelCell(x, 0, PIXEL_COLOR);
       drawPixelCell(x, tileCount - 1, PIXEL_COLOR);
     }
+
     for (let y = 1; y < tileCount - 1; y++) {
       drawPixelCell(0, y, PIXEL_COLOR);
       drawPixelCell(tileCount - 1, y, PIXEL_COLOR);
     }
 
-    obstacleBlocks.forEach((origin) => {
-      drawObstacleBlock(origin.x, origin.y, PIXEL_COLOR);
-    });
+    obstacleBlocks.forEach(o =>
+      drawObstacleBlock(o.x, o.y, PIXEL_COLOR)
+    );
 
     const useDemo =
       isDemoActive && !menu.classList.contains("hidden") && !isGameOver;
@@ -724,43 +621,21 @@ window.addEventListener("load", () => {
     const appleToDraw = useDemo ? demoApple : apple;
     const snakeToDraw = useDemo ? demoSnake : snake;
 
-    if (appleToDraw) {
-      drawPixelCell(appleToDraw.x, appleToDraw.y, APPLE_COLOR);
-    }
-
-    if (snakeToDraw) {
-      drawSnakeLine(snakeToDraw);
-    }
-
-    if (isGameOver) {
-      drawGameOverOverlay();
-    }
+    if (appleToDraw) drawPixelCell(appleToDraw.x, appleToDraw.y, APPLE_COLOR);
+    if (snakeToDraw) drawSnakeLine(snakeToDraw);
+    if (isGameOver) drawGameOverOverlay();
   }
 
-  // -----------------------------
-  // HUD
-  // -----------------------------
-
   function updateScoreDisplay() {
-    if (scoreEl) {
-      scoreEl.textContent = score;
-    }
+    if (scoreEl) scoreEl.textContent = score;
   }
 
   function updateGemsDisplay() {
-    if (!gemsEl) return;
-    gemsEl.textContent = 0;
+    if (gemsEl) gemsEl.textContent = 0;
   }
 
-  // -----------------------------
-  // Initialisierung
-  // -----------------------------
-
-  // 1. Spielername einmal abfragen (nur beim allerersten Start)
   askPlayerNameOnce();
   updatePlayerNameTag();
-
-  // 2. Demo starten & erstes Bild zeichnen
   startDemo();
   drawGame();
   updateGlobalLeaderboardDisplay();
