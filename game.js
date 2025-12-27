@@ -2,7 +2,7 @@ window.addEventListener("load", () => {
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
 
-  const tileCount = 20;
+  const tileCount = 19;
   const tileSize = canvas.width / tileCount;
 
   const BG_COLOR_OUTER = "#4e7a1e";
@@ -29,9 +29,9 @@ window.addEventListener("load", () => {
 
   let obstacles = [];
   let obstacleBlocks = [];
-  const OBSTACLE_COUNT = 15;
+  const OBSTACLE_COUNT = 10;
 
-  const GAME_SPEED_CLASSIC = 220;
+  const GAME_SPEED_CLASSIC = 240;
   const GAME_SPEED_HARD = 260;
 
   const BEST_KEY_CLASSIC = "snake_best_classic";
