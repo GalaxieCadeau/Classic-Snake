@@ -15,7 +15,7 @@ window.addEventListener("load", () => {
   const SNAKE_COLOR = "#000000";
   const EYE_COLOR = "#ffffff";
 
-  const PIXEL_SCALE = 1.0;
+  const PIXEL_SCALE = 0.7;
   const PIXEL_MARGIN = (1 - PIXEL_SCALE) / 2;
 
   let snake;
